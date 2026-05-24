@@ -1,0 +1,56 @@
+---
+title: "Merge Karpathy guidelines with project-specific rules"
+description: "Merge the Karpathy behavioral guidelines with your existing CLAUDE.md to tailor Claude Code's behavior for your codebase without losing project context."
+---
+
+The Andrej Karpathy Skills guidelines are designed to be merged with project-specific instructions — they're a foundation, not a replacement for context about your codebase. This page explains how to combine them with your own rules and when to adjust the tradeoffs they introduce.
+
+## Merging with project-specific instructions
+
+Whether you installed via the Claude Code plugin or by adding `CLAUDE.md` directly, you can extend the guidelines with rules specific to your project. Add sections to your `CLAUDE.md` after the four principles:
+
+```markdown
+## Project-Specific Guidelines
+
+- Use TypeScript strict mode
+- All API endpoints must have tests
+- Follow the existing error handling patterns in `src/utils/errors.ts`
+```
+
+Your project-specific sections sit alongside the four principles. Claude Code reads the full file, so both sets of instructions apply.
+
+## Adding to an existing CLAUDE.md
+
+If you already have a `CLAUDE.md` with project rules and want to add the Karpathy guidelines, append them:
+
+```bash
+echo "" >> CLAUDE.md
+curl https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md >> CLAUDE.md
+```
+
+This preserves your existing instructions and adds the behavioral guidelines below them.
+
+## Tradeoff: caution vs. speed
+
+These guidelines bias toward **caution over speed**. That's the right call for non-trivial work — it prevents costly mistakes and unnecessary rewrites. For trivial tasks (a simple typo fix, an obvious one-liner), use judgment. Not every change needs the full rigor of stating assumptions and verifying success criteria.
+
+<Tip>
+  The goal is reducing costly mistakes on complex work, not adding overhead to simple tasks.
+</Tip>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="When should I skip the guidelines?">
+    For trivial tasks — simple typo fixes, obvious one-liners, single-character changes — the full rigor of Think Before Coding and Goal-Driven Execution adds overhead without benefit. The guidelines exist to prevent costly mistakes on non-trivial work. Use judgment on what qualifies.
+  </Accordion>
+  <Accordion title="What if my project rules conflict with these guidelines?">
+    Project-specific rules take precedence for project-specific concerns. If your project requires a particular error handling pattern, that overrides the general "no error handling for impossible scenarios" guideline. The four principles are behavioral defaults, not absolute rules.
+  </Accordion>
+  <Accordion title="Can I modify the guidelines themselves?">
+    Yes. The `CLAUDE.md` file is plain text — edit it directly to remove principles that don't apply, tighten wording, or add exceptions. The plugin version installs from a remote source; if you need to customize it, use the `CLAUDE.md` approach instead so you have full control over the content.
+  </Accordion>
+  <Accordion title="How do these guidelines interact with the Claude Code plugin?">
+    When installed as a plugin, the guidelines apply globally across all projects. Project-level `CLAUDE.md` files are read in addition to the plugin, so you can add project-specific rules without duplicating the four principles. If you install via both methods, Claude Code will see the guidelines twice — use one approach per project.
+  </Accordion>
+</AccordionGroup>

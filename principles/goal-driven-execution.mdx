@@ -1,0 +1,153 @@
+---
+title: "Goal-Driven Execution: Define Success Before You Start"
+description: "How Andrej Karpathy Skills turns vague imperative tasks into verifiable goals with explicit checks, so LLMs can loop to a measurable outcome independently."
+---
+
+The Andrej Karpathy Skills project captures a key insight from Andrej Karpathy himself: LLMs are exceptionally good at looping until they meet specific goals. The failure mode isn't execution — it's goal definition. When a task is stated as a vague imperative ("fix the auth system," "make it work"), the model has no way to know when it's done or whether its changes solved the right problem. This principle — **Goal-Driven Execution** — transforms imperative instructions into declarative goals with verification steps, letting the model drive toward a measurable outcome rather than guess at one.
+
+## The key insight
+
+From Andrej Karpathy:
+
+> "LLMs are exceptionally good at looping until they meet specific goals... Don't tell it what to do, give it success criteria and watch it go."
+
+The implication is practical: **weak success criteria require constant clarification; strong success criteria let you loop independently.** "Make it work" is a weak criterion. "Write a test that reproduces the bug, then make the test pass" is a strong one. The second formulation gives the model a loop condition it can evaluate on its own.
+
+## The transformation pattern
+
+Transform imperative tasks into verifiable goals before starting:
+
+| Instead of... | Transform to... |
+|--------------|-----------------|
+| "Add validation" | "Write tests for invalid inputs, then make them pass" |
+| "Fix the bug" | "Write a test that reproduces it, then make it pass" |
+| "Refactor X" | "Ensure tests pass before and after" |
+
+Each transformed version has a concrete check — something you can run and observe. The original versions have none.
+
+## Multi-step plan format
+
+For tasks with more than one phase, state a brief plan before starting. Each step should name an action and a verification:
+
+```text Multi-step plan template
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+The verification step is what makes this useful. Without it, a plan is just a to-do list. With it, each step has a condition that must be true before moving to the next one.
+
+## Examples from real requests
+
+### Vague vs. verifiable: "Fix the authentication system"
+
+A vague approach produces a list of activities with no measurable outcome. A verifiable approach defines the specific issue first, then works toward a concrete test condition.
+
+```text Bad example — vague plan, no success criteria
+I'll fix the authentication system by:
+1. Reviewing the code
+2. Identifying issues
+3. Making improvements
+4. Testing the changes
+
+[Proceeds to make changes without clear success criteria]
+```
+
+```text Good example — verifiable goals with explicit checks
+To "fix authentication," I need to define success criteria.
+What specific issue are we solving?
+
+If the issue is "users stay logged in after password change":
+
+Plan:
+1. Write test: Change password → verify old session invalidated
+   Verify: Test fails (reproduces bug)
+
+2. Implement: Invalidate sessions on password change
+   Verify: Test passes
+
+3. Check edge cases: Multiple active sessions, concurrent changes
+   Verify: Additional tests pass
+
+4. Verify no regression: Existing auth tests still pass
+   Verify: Full test suite green
+
+Current test coverage for auth: [shows coverage]
+What's the specific auth issue you're seeing?
+```
+
+The good example surfaces the need for a concrete problem statement, proposes a structured plan with explicit verification at each step, and checks for regressions before declaring done.
+
+### Test-first verification: "The sorting breaks when there are duplicate scores"
+
+Jumping straight to a fix without reproducing the bug risks solving the wrong problem. The test-first approach confirms the bug exists, fixes it, and confirms it's gone.
+
+<Steps>
+  <Step title="Write a test that reproduces the issue">
+    Before changing any production code, write a test that fails in the way the user described. This confirms you understand the bug.
+
+    ```python
+    # 1. First, write a test that reproduces the issue
+    def test_sort_with_duplicate_scores():
+        """Test sorting when multiple items have same score."""
+        scores = [
+            {'name': 'Alice', 'score': 100},
+            {'name': 'Bob', 'score': 100},
+            {'name': 'Charlie', 'score': 90},
+        ]
+        
+        result = sort_scores(scores)
+        
+        # The bug: order is non-deterministic for duplicates
+        # Run this test multiple times, it should be consistent
+        assert result[0]['score'] == 100
+        assert result[1]['score'] == 100
+        assert result[2]['score'] == 90
+
+    # Verify: Run test 10 times → fails with inconsistent ordering
+    ```
+  </Step>
+  <Step title="Fix the production code">
+    Now that the bug is confirmed and reproducible, apply the fix. The test tells you exactly what "done" looks like.
+
+    ```python
+    # 2. Now fix with stable sort
+    def sort_scores(scores):
+        """Sort by score descending, then name ascending for ties."""
+        return sorted(scores, key=lambda x: (-x['score'], x['name']))
+
+    # Verify: Test passes consistently
+    ```
+  </Step>
+  <Step title="Verify the test passes">
+    Run the test — and run it multiple times if the original bug was non-deterministic. Confirm the fix holds before closing the task.
+  </Step>
+</Steps>
+
+<Note>
+  Compare this to the alternative: immediately change the sort logic without reproducing the bug first. That approach might fix the issue, but it might also mask it or introduce a different one. The test-first path removes the ambiguity.
+</Note>
+
+## What success looks like
+
+This principle is working when:
+
+- **Tasks have explicit verification steps** before implementation begins, not after.
+- **Multi-step work is planned upfront** with a check at each phase boundary.
+- **Bugs are reproduced before they're fixed** — you can confirm the fix worked.
+- **Regressions are caught automatically** because existing tests run as part of the plan.
+
+<Tip>
+  Strong success criteria reduce back-and-forth. Instead of "does this look right to you?", the question becomes "the tests pass — should I move to step 2?"
+</Tip>
+
+## Related principles
+
+<CardGroup cols={2}>
+  <Card title="Think Before Coding" icon="brain" href="/principles/think-before-coding">
+    Agree on what the task is before defining success criteria for it.
+  </Card>
+  <Card title="Surgical Changes" icon="scalpel" href="/principles/surgical-changes">
+    Once you know the goal, change only the lines that achieve it.
+  </Card>
+</CardGroup>

@@ -1,0 +1,161 @@
+---
+title: "Think Before Coding: Stop Silent Assumptions Early"
+description: "How Andrej Karpathy Skills stops LLMs from silently picking wrong interpretations, hiding confusion, and skipping tradeoff discussions before writing code."
+---
+
+The Andrej Karpathy Skills project identifies silent assumption-making as one of the most costly LLM coding failure modes. When a model receives an ambiguous request, it typically picks one interpretation and runs with it — writing code, creating files, and structuring solutions in ways the user never intended. By the time the mistake surfaces, significant work has to be discarded. This principle — **Think Before Coding** — forces explicit reasoning before any implementation begins.
+
+## The core problem
+
+From Andrej Karpathy's original observation:
+
+> "The models make wrong assumptions on your behalf and just run along with them without checking. They don't manage their confusion, don't seek clarifications, don't surface inconsistencies, don't present tradeoffs, don't push back when they should."
+
+The four sub-rules below address each failure mode directly.
+
+## The four sub-rules
+
+<AccordionGroup>
+  <Accordion title="State assumptions explicitly">
+    Before implementing, write out every assumption the solution depends on. If you're uncertain about any of them, ask rather than guess.
+
+    Assumptions to surface include:
+    - Who the feature is for (all users? admins? a subset?)
+    - What format output should take (file? API response? UI?)
+    - Which fields or data should be included
+    - What scale or volume the solution needs to handle
+
+    Surfacing assumptions before coding lets the user correct misunderstandings before they're baked into 200 lines of code.
+  </Accordion>
+
+  <Accordion title="Present multiple interpretations">
+    When a request is ambiguous, don't pick silently. Present the distinct interpretations you can see, explain the tradeoffs between them, and ask which one to pursue.
+
+    This is especially important when:
+    - The same word can mean different things ("faster" could mean lower latency, higher throughput, or better perceived speed)
+    - The scope of a feature isn't defined ("export data" could mean a UI download, a background job, or an API endpoint)
+    - Constraints differ significantly across approaches (in-memory vs. database-backed, synchronous vs. async)
+
+    Presenting options takes a few extra lines. Rebuilding after the wrong choice was silently made takes hours.
+  </Accordion>
+
+  <Accordion title="Push back when warranted">
+    If a simpler approach exists, say so. If the request as stated would lead to an over-engineered or fragile solution, push back before implementing.
+
+    Pushing back is not refusing to help — it's providing the same advice a senior engineer on the team would offer. Examples:
+    - "You asked for a caching layer, but the query runs in 30ms. Is caching worth the added complexity here?"
+    - "This could be a single function instead of a class hierarchy. Should I keep it simple?"
+
+    The goal is to surface tradeoffs, not to gate-keep. If the user wants the complex version after understanding the tradeoff, implement it.
+  </Accordion>
+
+  <Accordion title="Stop when confused">
+    If something in the request is genuinely unclear, stop. Name exactly what's confusing and ask a targeted question. Don't attempt to implement through confusion and hope the result is right.
+
+    "Unclear" means:
+    - The request contradicts something else in the codebase
+    - A key term could mean two different things and the choice affects architecture
+    - A prerequisite is missing (e.g., "add auth" but there's no user model yet)
+
+    One clarifying question before coding is worth more than a long diff that misses the point.
+  </Accordion>
+</AccordionGroup>
+
+## Examples from real requests
+
+### Hidden assumptions: "Add a feature to export user data"
+
+The request sounds simple, but it hides at least four independent assumptions.
+
+```python Bad example — silent assumption-making
+def export_users(format='json'):
+    """Export all users to a file."""
+    users = User.query.all()
+    
+    if format == 'json':
+        with open('users.json', 'w') as f:
+            json.dump([u.to_dict() for u in users], f)
+    elif format == 'csv':
+        with open('users.csv', 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=['id', 'email', 'name'])
+            writer.writeheader()
+            writer.writerows([u.to_dict() for u in users])
+    
+    return f"Exported {len(users)} users"
+```
+
+This code assumes: all users should be exported (no pagination or privacy filter), the file should land on the server filesystem, `id/email/name` are the right fields, and CSV fieldnames match the actual data structure. Every one of those assumptions could be wrong.
+
+```text Good example — surface assumptions before coding
+Before implementing, I need to clarify:
+
+1. Scope: Export all users or a filtered subset? (privacy implications)
+2. Format: You mentioned "export" — did you mean:
+   - Download file in browser?
+   - Background job with email notification?
+   - API endpoint returning data?
+3. Fields: Which user fields? (some might be sensitive)
+4. Volume: How many users typically? (affects approach)
+
+Simplest approach: Add an API endpoint that returns paginated JSON.
+Would need more info for file-based exports.
+
+What's your preference?
+```
+
+### Multiple interpretations: "Make the search faster"
+
+"Faster" is a single word that covers at least three different problems with different solutions.
+
+```python Bad example — pick silently and over-implement
+# Adds caching, database indexes, and async processing
+# without asking which "faster" matters
+@lru_cache(maxsize=1000)
+async def search(query: str) -> List[Result]:
+    # ... 200 lines of optimization code
+```
+
+```text Good example — present interpretations with tradeoffs
+"Make the search faster" could mean:
+
+1. Faster response time (< 100ms instead of 500ms)
+   - Add database indexes
+   - Cache frequent queries
+   - Estimated effort: 2 hours
+
+2. Handle more concurrent searches (throughput)
+   - Add async/await
+   - Connection pooling
+   - Estimated effort: 4 hours
+
+3. Faster perceived speed (UX)
+   - Show partial results immediately
+   - Progressive loading
+   - Estimated effort: 3 hours
+
+Current search takes ~500ms for typical queries.
+Which aspect matters most for your use case?
+```
+
+<Note>
+  These guidelines bias toward caution over speed. For trivial tasks with obvious intent, use judgment — not every request needs a full clarification round.
+</Note>
+
+## What success looks like
+
+This principle is working when clarifying questions come **before** implementation rather than after mistakes. You should see:
+
+- Fewer rewrites caused by wrong initial assumptions
+- Smaller, more focused diffs because the scope was agreed on upfront
+- Tradeoff discussions that happen in comments, not in code reviews after the fact
+
+## Related principles
+
+<CardGroup cols={2}>
+  <Card title="Simplicity First" icon="minus" href="/principles/simplicity-first">
+    Once you know what to build, build the minimum version. No speculative features.
+  </Card>
+  <Card title="Goal-Driven Execution" icon="bullseye-arrow" href="/principles/goal-driven-execution">
+    Define verifiable success criteria before starting multi-step tasks.
+  </Card>
+</CardGroup>

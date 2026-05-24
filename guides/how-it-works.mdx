@@ -1,0 +1,70 @@
+---
+title: 'Why the Karpathy guidelines work: failure modes explained'
+description: 'Understand the underlying insight behind the four principles — why each one targets a specific, recurring failure mode in LLM coding behavior.'
+---
+
+The Karpathy guidelines are a single `CLAUDE.md` file derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on where LLMs go wrong in coding workflows. This page explains why the four principles are structured the way they are — the underlying insight, what failure mode each one addresses, and how to tell when the guidelines are having an effect.
+
+## The key insight
+
+From Andrej Karpathy:
+
+> "LLMs are exceptionally good at looping until they meet specific goals... Don't tell it what to do, give it success criteria and watch it go."
+
+This cuts in two directions. LLMs can self-correct and iterate autonomously when goals are clear — but when goals are vague, they fill the gap with assumptions, complexity, and scope creep. The four principles convert ambiguous prompts into well-specified, verifiable tasks and constrain the behaviors that emerge when specification is absent.
+
+## How each principle maps to a failure mode
+
+<CardGroup cols={2}>
+  <Card title="Think Before Coding" icon="brain" href="/principles/think-before-coding">
+    **Failure mode:** Wrong assumptions, hidden confusion, missing tradeoffs
+
+    LLMs pick an interpretation silently and run with it. This principle forces explicit reasoning before any code is written — state assumptions, surface ambiguity, present interpretations, and push back when a simpler path exists.
+  </Card>
+  <Card title="Simplicity First" icon="minus" href="/principles/simplicity-first">
+    **Failure mode:** Overcomplication, bloated abstractions
+
+    LLMs default to patterns like strategy classes, abstract base classes, and configurable factories even when a single function would do. This principle sets a concrete test: would a senior engineer call this overcomplicated? If yes, rewrite it.
+  </Card>
+  <Card title="Surgical Changes" icon="scalpel" href="/principles/surgical-changes">
+    **Failure mode:** Orthogonal edits, touching code you did not ask about
+
+    LLMs add type hints, change comment style, reformat whitespace, and refactor adjacent code as side effects of unrelated changes. This principle defines a clear boundary: every changed line must trace directly to the user's request.
+  </Card>
+  <Card title="Goal-Driven Execution" icon="bullseye-arrow" href="/principles/goal-driven-execution">
+    **Failure mode:** Vague plans with no verifiable outcome
+
+    LLMs produce plans like "review, identify issues, improve, test" with no definition of done. This principle transforms imperative instructions into declarative goals with explicit verification steps, enabling autonomous looping without constant clarification.
+  </Card>
+</CardGroup>
+
+## How each failure mode was described
+
+Andrej's original post identified the problems directly:
+
+> "The models make wrong assumptions on your behalf and just run along with them without checking. They don't manage their confusion, don't seek clarifications, don't surface inconsistencies, don't present tradeoffs, don't push back when they should."
+
+> "They really like to overcomplicate code and APIs, bloat abstractions, don't clean up dead code... implement a bloated construction over 1000 lines when 100 would do."
+
+> "They still sometimes change/remove comments and code they don't sufficiently understand as side effects, even if orthogonal to the task."
+
+Each principle maps directly to one of these quoted failure modes. The fourth principle — Goal-Driven Execution — addresses the positive capability gap: LLMs *can* loop autonomously to meet a goal, but only when success criteria are specified precisely enough to verify.
+
+## How to know it's working
+
+These are the four signs that the guidelines are having a real effect on LLM behavior:
+
+- **Fewer unnecessary changes in diffs** — Only the requested changes appear. No reformatting, no added docstrings, no drive-by refactoring.
+- **Fewer rewrites due to overcomplication** — Code is simple the first time. You do not have to ask for a simpler version.
+- **Clarifying questions come before implementation** — The LLM surfaces assumptions and ambiguities before writing code, not after you reject a wrong implementation.
+- **Clean, minimal PRs** — Pull requests contain exactly the requested change. No "improvements" that weren't asked for.
+
+If you're still seeing large diffs with unrelated changes, the Surgical Changes principle is not being applied. If implementations come back with abstract factories for a one-off function, Simplicity First is being skipped.
+
+## Tradeoffs
+
+These guidelines deliberately bias toward **caution over speed**. That tradeoff is intentional for non-trivial work — the cost of a wrong assumption or an overcomplicated abstraction early in a task compounds over time.
+
+For trivial tasks — a simple typo fix, an obvious one-liner, a change with no interpretation ambiguity — applying the full rigor of all four principles adds friction with no benefit. Use judgment. The goal is reducing costly mistakes on work that matters, not slowing down tasks that are straightforward.
+
+The guidelines are also designed to be **merged with project-specific instructions**, not used in isolation. Add them to an existing `CLAUDE.md` alongside your project's conventions (required test coverage, error handling patterns, API design rules) so the behavioral guidelines complement rather than replace your existing standards.

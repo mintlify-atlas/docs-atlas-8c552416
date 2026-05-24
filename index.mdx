@@ -1,133 +1,71 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "Andrej Karpathy Skills: Better LLM Coding Behavior"
+description: "Four behavioral guidelines that prevent LLMs from over-engineering, making wrong assumptions, and making unrequested changes. Drop in as a CLAUDE.md or plugin."
 ---
 
-## Setting up
+Andrej Karpathy Skills is a single-file set of behavioral guidelines that address the most common LLM coding pitfalls — derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on how language models go wrong when writing code. Install it as a Claude Code plugin, a Cursor project rule, or a per-project `CLAUDE.md` file.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Get started" icon="rocket" href="/installation">
+    Install the guidelines as a Claude Code plugin or drop-in CLAUDE.md file in under 2 minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="The four principles" icon="list-check" href="/principles/think-before-coding">
+    Explore each principle — Think Before Coding, Simplicity First, Surgical Changes, and Goal-Driven Execution.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Real-world examples" icon="code" href="/guides/examples">
+    Side-by-side examples of what LLMs do wrong and how the guidelines correct the behavior.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Cursor setup" icon="arrow-pointer" href="/guides/cursor">
+    Use the same guidelines in Cursor via committed project rules — no extra configuration needed.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## The problem these guidelines solve
 
-Everything you need to create world-class documentation.
+From Andrej Karpathy:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+> "The models make wrong assumptions on your behalf and just run along with them without checking. They don't manage their confusion, don't seek clarifications, don't surface inconsistencies, don't present tradeoffs, don't push back when they should."
 
-## Make your content agent ready
+> "They really like to overcomplicate code and APIs, bloat abstractions, don't clean up dead code... implement a bloated construction over 1000 lines when 100 would do."
 
-Make your docs work for humans and AI agents alike.
+These four principles directly address each failure mode.
 
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
+## The four principles at a glance
 
-## Need inspiration?
+<CardGroup cols={2}>
+  <Card title="Think Before Coding" icon="brain" href="/principles/think-before-coding">
+    State assumptions explicitly. Surface tradeoffs. Ask rather than guess.
+  </Card>
+  <Card title="Simplicity First" icon="minus" href="/principles/simplicity-first">
+    Write the minimum code that solves the problem. Nothing speculative.
+  </Card>
+  <Card title="Surgical Changes" icon="scalpel" href="/principles/surgical-changes">
+    Touch only what you must. Match existing style. Clean up only your own mess.
+  </Card>
+  <Card title="Goal-Driven Execution" icon="bullseye-arrow" href="/principles/goal-driven-execution">
+    Define verifiable success criteria. Transform tasks into testable goals.
+  </Card>
+</CardGroup>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+## Quick install
+
+<Steps>
+  <Step title="Add the plugin marketplace">
+    In Claude Code, run:
+    ```bash
+    /plugin marketplace add forrestchang/andrej-karpathy-skills
+    ```
+  </Step>
+  <Step title="Install the plugin">
+    ```bash
+    /plugin install andrej-karpathy-skills@karpathy-skills
+    ```
+  </Step>
+  <Step title="Start coding">
+    The guidelines are now active across all your projects. Claude will surface assumptions, prefer simpler solutions, make surgical edits, and define verifiable goals before implementing.
+  </Step>
+</Steps>
+
+<Note>
+  Prefer a per-project file? See [Installation](/installation) for the `CLAUDE.md` drop-in option and how to merge with existing project instructions.
+</Note>

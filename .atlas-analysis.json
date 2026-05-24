@@ -1,0 +1,46 @@
+{
+  "projectType": "general",
+  "projectName": "Andrej Karpathy Skills",
+  "projectDescription": "A CLAUDE.md file and Claude Code plugin providing four behavioral guidelines to reduce common LLM coding pitfalls, derived from Andrej Karpathy's observations.",
+  "theme": "willow",
+  "primaryColor": "#7c7c7c",
+  "lightColor": "#0a0a0a",
+  "darkColor": "#c7c7c7",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": ["introduction", "installation", "customization"]
+      },
+      {
+        "group": "The Four Principles",
+        "pages": [
+          "principles/think-before-coding",
+          "principles/simplicity-first",
+          "principles/surgical-changes",
+          "principles/goal-driven-execution"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": ["guides/examples", "guides/cursor", "guides/how-it-works"]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Think Before Coding — surface assumptions and tradeoffs before writing code",
+    "Simplicity First — minimum code that solves the problem, nothing speculative",
+    "Surgical Changes — touch only what you must, match existing style",
+    "Goal-Driven Execution — define verifiable success criteria and loop until met",
+    "Claude Code plugin installation via marketplace",
+    "Cursor project rules support",
+    "Per-project CLAUDE.md drop-in file"
+  ],
+  "publicApiSurface": [
+    "CLAUDE.md — drop-in behavioral guidelines file",
+    "skills/karpathy-guidelines/SKILL.md — reusable Claude Code skill",
+    ".cursor/rules/karpathy-guidelines.mdc — Cursor project rule",
+    "/plugin marketplace add forrestchang/andrej-karpathy-skills — Claude Code plugin install",
+    "/plugin install andrej-karpathy-skills@karpathy-skills — activate skill"
+  ]
+}

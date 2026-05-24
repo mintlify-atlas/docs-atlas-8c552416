@@ -1,0 +1,183 @@
+---
+title: "Surgical Changes: Edit Only What the Request Requires"
+description: "How Andrej Karpathy Skills keeps LLMs from making unrequested edits, reformatting code, or touching adjacent logic as a side effect of an unrelated change."
+---
+
+The Andrej Karpathy Skills project identifies drive-by editing as one of the most disruptive LLM behaviors: while fixing a bug or adding a feature, the model also reformats whitespace, improves comments, adds type hints, refactors adjacent code, and removes what it thinks is dead code. Every extra change is noise in the diff, a potential new bug, and a violation of the user's intent. This principle — **Surgical Changes** — draws a hard boundary: touch only the lines that the user's request requires.
+
+## The core problem
+
+From Andrej Karpathy's observation:
+
+> "They still sometimes change/remove comments and code they don't sufficiently understand as side effects, even if orthogonal to the task."
+
+Drive-by changes are especially damaging because they make diffs harder to review, introduce style drift across a codebase, and occasionally break things that were working fine. The model may believe it's being helpful — but the user asked for a fix, not a refactor.
+
+## Rules for editing existing code
+
+- **Don't "improve" adjacent code, comments, or formatting.** If the code next to your change uses single quotes, old-style string formatting, or a pattern you'd do differently — leave it alone.
+- **Don't refactor things that aren't broken.** A working function with an inelegant implementation is not your problem to solve unless you were asked to solve it.
+- **Match existing style, even if you'd do it differently.** Consistency within a file matters more than your personal preferences. If the file uses `snake_case`, two-space indents, and single quotes, your additions should too.
+- **If you notice unrelated dead code, mention it — don't delete it.** Call it out in a comment or a note to the user. Let them decide whether to remove it.
+
+## Rules for cleaning up orphans
+
+Your changes may make things unused: an import that's no longer referenced, a helper variable that your new approach eliminates, or a function that nothing calls anymore. You are responsible for those — but only those.
+
+- **Remove imports, variables, and functions that YOUR changes made unused.**
+- **Don't remove pre-existing dead code unless you were asked to.**
+
+The distinction matters. Removing code you introduced that's now unused is hygiene. Removing code that was already there is scope creep — you might be wrong about whether it's used, and you weren't asked to audit it.
+
+<Note>
+  **The key test:** Every changed line should trace directly to the user's request. If you can't draw that line, the change shouldn't be in the diff.
+</Note>
+
+## Examples from real requests
+
+### Drive-by refactoring: "Fix the bug where empty emails crash the validator"
+
+The bug is narrow: the validator crashes when `email` is empty. The fix touches exactly the lines that handle that case.
+
+```diff Bad example — too many changes
+  def validate_user(user_data):
+-     # Check email format
+-     if not user_data.get('email'):
++     """Validate user data."""
++     email = user_data.get('email', '').strip()
++     
++     # Validate email
++     if not email:
+          raise ValueError("Email required")
+-     
+-     # Basic email validation
+-     if '@' not in user_data['email']:
++     if '@' not in email or '.' not in email.split('@')[1]:
+          raise ValueError("Invalid email")
+      
+-     # Check username
+-     if not user_data.get('username'):
++     # Validate username
++     username = user_data.get('username', '').strip()
++     if not username:
+          raise ValueError("Username required")
++     if len(username) < 3:
++         raise ValueError("Username too short")
++     if not username.isalnum():
++         raise ValueError("Username must be alphanumeric")
+      
+      return True
+```
+
+This diff changes comments, adds a docstring, improves email validation beyond the crash fix, and adds username validation that wasn't requested. Every one of those changes is outside the scope of the original bug report.
+
+```diff Good example — only the lines that fix the crash
+  def validate_user(user_data):
+      # Check email format
+-     if not user_data.get('email'):
++     email = user_data.get('email', '')
++     if not email or not email.strip():
+          raise ValueError("Email required")
+      
+      # Basic email validation
+-     if '@' not in user_data['email']:
++     if '@' not in email:
+          raise ValueError("Invalid email")
+      
+      # Check username
+      if not user_data.get('username'):
+          raise ValueError("Username required")
+      
+      return True
+```
+
+Only the specific lines that fix empty email handling were touched. Comments, username logic, and whitespace are unchanged.
+
+### Style drift: "Add logging to the upload function"
+
+Adding logging means inserting log calls. It does not mean adding type hints, changing quote style, adding a docstring, or restructuring the boolean return logic.
+
+```diff Bad example — reformats everything while adding logging
+- def upload_file(file_path, destination):
++ def upload_file(file_path: str, destination: str) -> bool:
++     """Upload file to destination with logging."""
++     logger.info(f"Uploading {file_path} to {destination}")
++     
+      try:
+-         with open(file_path, 'rb') as f:
+-             data = f.read()
+-         
+-         response = requests.post(destination, files={'file': data})
+-         
+-         if response.status_code == 200:
+-             return True
+-         else:
+-             return False
++         with open(file_path, "rb") as f:
++             data = f.read()
++         response = requests.post(destination, files={"file": data})
++         success = response.status_code == 200
++         
++         if success:
++             logger.info(f"Upload successful: {file_path}")
++         else:
++             logger.error(f"Upload failed: {file_path}, status={response.status_code}")
++         
++         return success
+      except Exception as e:
+-         print(f"Error: {e}")
++         logger.exception(f"Upload error for {file_path}: {e}")
+          return False
+```
+
+Changed: quote style (`'` to `"`), added type hints, added docstring, reformatted whitespace, restructured the boolean return. None of that was asked for.
+
+```diff Good example — adds logging, matches existing style
++ import logging
++ 
++ logger = logging.getLogger(__name__)
++ 
+  def upload_file(file_path, destination):
++     logger.info(f'Starting upload: {file_path}')
+      try:
+          with open(file_path, 'rb') as f:
+              data = f.read()
+          
+          response = requests.post(destination, files={'file': data})
+          
+          if response.status_code == 200:
++             logger.info(f'Upload successful: {file_path}')
+              return True
+          else:
++             logger.error(f'Upload failed: {file_path}, status={response.status_code}')
+              return False
+      except Exception as e:
+-         print(f"Error: {e}")
++         logger.exception(f'Upload error: {file_path}')
+          return False
+```
+
+Single quotes, no type hints, existing boolean pattern, existing spacing — all preserved. Only the logging lines were added.
+
+## What success looks like
+
+This principle is working when:
+
+- **Diffs are small and focused.** Only the lines that address the request appear as changed.
+- **No style drift.** Files look consistent before and after a change.
+- **Clean, minimal PRs.** Reviewers can see exactly what changed and why.
+
+<Warning>
+  If you notice that existing code has real problems — dead code, a latent bug, a confusing pattern — mention it to the user separately. Don't fix it silently as a side effect of an unrelated task.
+</Warning>
+
+## Related principles
+
+<CardGroup cols={2}>
+  <Card title="Simplicity First" icon="minus" href="/principles/simplicity-first">
+    Keep changes minimal not just in scope but in complexity — don't add abstractions the request didn't ask for.
+  </Card>
+  <Card title="Think Before Coding" icon="brain" href="/principles/think-before-coding">
+    Clarify scope before starting so you know exactly which lines need to change.
+  </Card>
+</CardGroup>

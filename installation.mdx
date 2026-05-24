@@ -1,0 +1,67 @@
+---
+title: "Install Andrej Karpathy Skills in Claude Code or Cursor"
+description: "Install the Karpathy coding guidelines as a Claude Code plugin that applies globally, or add them as a per-project CLAUDE.md file to a single repository."
+---
+
+The Andrej Karpathy Skills project offers two ways to install the behavioral guidelines: as a Claude Code plugin that applies across all your projects, or as a `CLAUDE.md` file scoped to a single project. This page walks through both options.
+
+<Note>
+  These guidelines bias toward **caution over speed**. For trivial tasks (simple typo fixes, obvious one-liners), use judgment — not every change needs the full rigor. The goal is reducing costly mistakes on non-trivial work, not slowing down simple tasks.
+</Note>
+
+<Tabs>
+  <Tab title="Option A: Claude Code Plugin (recommended)">
+    Installing as a Claude Code plugin makes the guidelines available across all your projects without touching individual `CLAUDE.md` files.
+
+    <Steps>
+      <Step title="Add the marketplace">
+        From within Claude Code, run:
+
+        ```
+        /plugin marketplace add forrestchang/andrej-karpathy-skills
+        ```
+      </Step>
+      <Step title="Install the plugin">
+        Then install the skill:
+
+        ```
+        /plugin install andrej-karpathy-skills@karpathy-skills
+        ```
+
+        This installs the guidelines as a Claude Code plugin, making the skill available across all your projects.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Option B: CLAUDE.md (per-project)">
+    Use this option to scope the guidelines to a single project, or to merge them with existing project-specific instructions.
+
+    <Steps>
+      <Step title="Choose your scenario">
+        Pick the command that matches your situation.
+      </Step>
+      <Step title="New project">
+        If you don't have an existing `CLAUDE.md`, download the file directly:
+
+        ```bash
+        curl -o CLAUDE.md https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md
+        ```
+      </Step>
+      <Step title="Existing project (append)">
+        If you already have a `CLAUDE.md`, append the guidelines to it:
+
+        ```bash
+        echo "" >> CLAUDE.md
+        curl https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md >> CLAUDE.md
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Verify the installation
+
+After installing, open Claude Code and ask it to describe its coding guidelines. You should see it reference the four principles: Think Before Coding, Simplicity First, Surgical Changes, and Goal-Driven Execution.
+
+## Next steps
+
+Once installed, see [Customization](/customization) to learn how to merge these guidelines with your project-specific instructions.

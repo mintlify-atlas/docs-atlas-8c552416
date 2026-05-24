@@ -1,0 +1,92 @@
+---
+title: 'Use Karpathy behavioral guidelines in Cursor projects'
+description: 'Apply the same four behavioral guidelines in Cursor using a committed project rule, and learn how to extend them to other projects or personal skills.'
+---
+
+This page explains how to use the Karpathy-inspired behavioral guidelines in Cursor. The `andrej-karpathy-skills` repository includes a committed Cursor project rule — `.cursor/rules/karpathy-guidelines.mdc` — so the same four principles that govern Claude Code behavior apply automatically whenever you open the project in Cursor, without any extra setup.
+
+## Set up in this repository
+
+<Steps>
+  <Step title="Open the folder in Cursor">
+    Open the `andrej-karpathy-skills` repository folder in Cursor as you would any project. No additional installation is needed.
+  </Step>
+  <Step title="The rule is already committed">
+    The file `.cursor/rules/karpathy-guidelines.mdc` is committed to the repository with `alwaysApply: true`. Cursor picks it up automatically when the folder is open.
+
+    <Note>
+      When a rule has `alwaysApply: true`, Cursor injects it into every agent and chat context within the project without you needing to reference it manually. You will never have to remember to attach it.
+    </Note>
+  </Step>
+  <Step title="Verify under Settings → Rules">
+    In Cursor, open **Settings → Rules** (or the project rules UI). The `karpathy-guidelines` rule should appear in the list of active project rules, confirming it is loaded.
+  </Step>
+</Steps>
+
+## Use the guidelines in another project
+
+To bring the same behavioral guidelines into a different codebase, copy the committed rule file into that project.
+
+<Tabs>
+  <Tab title="Cursor (recommended)">
+    Copy `.cursor/rules/karpathy-guidelines.mdc` into the target project's `.cursor/rules/` directory. Create the folders if they do not exist.
+
+    ```bash
+    mkdir -p /path/to/your-project/.cursor/rules
+    cp .cursor/rules/karpathy-guidelines.mdc /path/to/your-project/.cursor/rules/
+    ```
+
+    Adjust or merge the rule with any existing rules in that directory. Commit the file so the rule travels with the project for all contributors.
+  </Tab>
+  <Tab title="Other tools">
+    If your stack only supports a root instruction file (not a `.cursor/rules/` directory), copy `CLAUDE.md` into the project root instead, or merge its contents into your existing instructions file.
+
+    ```bash
+    curl -o CLAUDE.md https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md
+    ```
+
+    For an existing project, append rather than overwrite:
+
+    ```bash
+    echo "" >> CLAUDE.md
+    curl https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md >> CLAUDE.md
+    ```
+  </Tab>
+</Tabs>
+
+## Optional: personal Agent Skills
+
+If you want the guidelines available as a reusable personal skill across all your projects — not just ones where you copy the rule file — use the `~/.cursor/skills/` approach.
+
+The repository includes `skills/karpathy-guidelines/SKILL.md`. Copy or symlink it into your personal Cursor skills directory:
+
+```bash
+mkdir -p ~/.cursor/skills/karpathy-guidelines
+cp skills/karpathy-guidelines/SKILL.md ~/.cursor/skills/karpathy-guidelines/SKILL.md
+```
+
+Use whatever layout you already use for other personal skills. Once placed there, the skill is available in Cursor agent contexts across any project you open.
+
+## Claude Code vs Cursor
+
+The guidelines are the same in both tools, but the delivery mechanism differs:
+
+| | Claude Code | Cursor |
+|---|---|---|
+| **Primary method** | Plugin marketplace or `CLAUDE.md` in project root | Committed `.cursor/rules/karpathy-guidelines.mdc` |
+| **Reads `CLAUDE.md`** | Yes, by default | No — Cursor does not read `CLAUDE.md` automatically |
+| **Reads `.cursor/rules/`** | No | Yes — loaded automatically when `alwaysApply: true` |
+| **Per-project install** | Copy `CLAUDE.md` to project | Copy `.mdc` file to `.cursor/rules/` |
+| **Personal/global install** | Plugin marketplace installation | Copy skill to `~/.cursor/skills/` |
+
+If you use both tools on the same project, commit both `CLAUDE.md` and `.cursor/rules/karpathy-guidelines.mdc` so each editor picks up its own format.
+
+## For contributors
+
+When you update the four principles, keep the following files in sync manually — there is no automated check:
+
+- **`CLAUDE.md`** — read by Claude Code
+- **`.cursor/rules/karpathy-guidelines.mdc`** — read by Cursor
+- **`skills/karpathy-guidelines/SKILL.md`** — used as a personal reusable skill
+
+The content of all three should reflect the same four principles so behavior is consistent regardless of which editor a contributor uses.
